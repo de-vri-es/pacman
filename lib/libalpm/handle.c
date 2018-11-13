@@ -88,6 +88,8 @@ void _alpm_handle_free(alpm_handle_t *handle)
 	FREE(handle->lockfile);
 	FREE(handle->arch);
 	FREE(handle->gpgdir);
+	FREE(handle->dlclientcert);
+	FREE(handle->dlclientkey);
 	FREELIST(handle->noupgrade);
 	FREELIST(handle->noextract);
 	FREELIST(handle->ignorepkg);
@@ -411,6 +413,37 @@ alpm_errno_t _alpm_set_directory_option(const char *value,
 		FREE(*storage);
 	}
 	*storage = canonicalize_path(path);
+	if(!*storage) {
+		return ALPM_ERR_MEMORY;
+	}
+	return 0;
+}
+
+alpm_errno_t _alpm_set_file_option(const char *value,
+		char **storage, int must_exist)
+{
+	struct stat st;
+	char real[PATH_MAX];
+	const char *path;
+
+	path = value;
+	if(!path) {
+		return ALPM_ERR_WRONG_ARGS;
+	}
+	if(must_exist) {
+		if(stat(path, &st) == -1 || !S_ISREG(st.st_mode)) {
+			return ALPM_ERR_NOT_A_FILE;
+		}
+		if(!realpath(path, real)) {
+			return ALPM_ERR_NOT_A_FILE;
+		}
+		path = real;
+	}
+
+	if(*storage) {
+		FREE(*storage);
+	}
+	*storage = strdup(path);
 	if(!*storage) {
 		return ALPM_ERR_MEMORY;
 	}
@@ -874,5 +907,47 @@ int SYMEXPORT alpm_option_set_disable_dl_timeout(alpm_handle_t *handle,
 #ifdef HAVE_LIBCURL
 	handle->disable_dl_timeout = disable_dl_timeout;
 #endif
+	return 0;
+}
+
+const char * SYMEXPORT alpm_option_get_dlclientcert(alpm_handle_t *handle)
+{
+	CHECK_HANDLE(handle, return NULL);
+	return handle->dlclientcert;
+}
+
+int SYMEXPORT alpm_option_set_dlclientcert(alpm_handle_t *handle, const char * path)
+{
+	int err;
+	CHECK_HANDLE(handle, return -1);
+	if(!path) {
+		FREE(handle->dlclientcert);
+		return 0;
+	}
+	if((err = _alpm_set_file_option(path, &(handle->dlclientcert), 1))) {
+		RET_ERR(handle, err, -1);
+	}
+	_alpm_log(handle, ALPM_LOG_DEBUG, "option 'dlclient_cert' = %s\n", handle->dlclientcert);
+	return 0;
+}
+
+const char * SYMEXPORT alpm_option_get_dlclientkey(alpm_handle_t *handle)
+{
+	CHECK_HANDLE(handle, return NULL);
+	return handle->dlclientkey;
+}
+
+int SYMEXPORT alpm_option_set_dlclientkey(alpm_handle_t *handle, const char * path)
+{
+	int err;
+	CHECK_HANDLE(handle, return -1);
+	if(!path) {
+		FREE(handle->dlclientkey);
+		return 0;
+	}
+	if((err = _alpm_set_file_option(path, &(handle->dlclientkey), 1))) {
+		RET_ERR(handle, err, -1);
+	}
+	_alpm_log(handle, ALPM_LOG_DEBUG, "option 'dlclient_key' = %s\n", handle->dlclientkey);
 	return 0;
 }

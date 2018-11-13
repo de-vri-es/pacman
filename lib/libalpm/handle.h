@@ -82,6 +82,8 @@ struct __alpm_handle_t {
 	char *logfile;           /* Name of the log file */
 	char *lockfile;          /* Name of the lock file */
 	char *gpgdir;            /* Directory where GnuPG files are stored */
+	char *dlclientcert;        /* Name of the client certificate */
+	char *dlclientkey;         /* Name of the client key */
 	alpm_list_t *cachedirs;  /* Paths to pacman cache directories */
 	alpm_list_t *hookdirs;   /* Paths to hook directories */
 	alpm_list_t *overwrite_files; /* Paths that may be overwritten */

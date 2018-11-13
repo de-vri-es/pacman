@@ -276,6 +276,9 @@ static void curl_set_handle_opts(struct dload_payload *payload,
 	curl_easy_setopt(curl, CURLOPT_TCP_KEEPINTVL, 60L);
 	curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
 
+	curl_easy_setopt(curl, CURLOPT_SSLCERT, alpm_option_get_dlclientcert(handle));
+	curl_easy_setopt(curl, CURLOPT_SSLKEY, alpm_option_get_dlclientkey(handle));
+
 	_alpm_log(handle, ALPM_LOG_DEBUG, "url: %s\n", payload->fileurl);
 
 	if(payload->max_size) {
