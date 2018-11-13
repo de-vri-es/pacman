@@ -150,6 +150,8 @@ int config_free(config_t *oldconfig)
 	free(oldconfig->gpgdir);
 	FREELIST(oldconfig->hookdirs);
 	FREELIST(oldconfig->cachedirs);
+	free(oldconfig->xferclientcert);
+	free(oldconfig->xferclientkey);
 	free(oldconfig->xfercommand);
 	free(oldconfig->print_format);
 	free(oldconfig->arch);
@@ -567,6 +569,12 @@ static int _parse_options(const char *key, char *value,
 				config->logfile = strdup(value);
 				pm_printf(ALPM_LOG_DEBUG, "config: logfile: %s\n", value);
 			}
+		} else if(strcmp(key, "XferClientCert") == 0) {
+			config->xferclientcert = strdup(value);
+			pm_printf(ALPM_LOG_DEBUG, "config: xferclientcert: %s\n", value);
+		} else if(strcmp(key, "XferClientKey") == 0) {
+			config->xferclientkey = strdup(value);
+			pm_printf(ALPM_LOG_DEBUG, "config: xferclientkey: %s\n", value);
 		} else if(strcmp(key, "XferCommand") == 0) {
 			config->xfercommand = strdup(value);
 			pm_printf(ALPM_LOG_DEBUG, "config: xfercommand: %s\n", value);
@@ -751,6 +759,20 @@ static int setup_libalpm(void)
 
 	for(i = config->repos; i; i = alpm_list_next(i)) {
 		register_repo(i->data);
+	}
+
+	ret = alpm_option_set_dlclientcert(handle, config->xferclientcert);
+	if(ret != 0) {
+		pm_printf(ALPM_LOG_ERROR, _("problem setting dlclientcert '%s' (%s)\n"),
+				config->xferclientcert, alpm_strerror(alpm_errno(handle)));
+		return ret;
+	}
+
+	ret = alpm_option_set_dlclientkey(handle, config->xferclientkey);
+	if(ret != 0) {
+		pm_printf(ALPM_LOG_ERROR, _("problem setting dlclientkey '%s' (%s)\n"),
+				config->xferclientkey, alpm_strerror(alpm_errno(handle)));
+		return ret;
 	}
 
 	if(config->xfercommand) {

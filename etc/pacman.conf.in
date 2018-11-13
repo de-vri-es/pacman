@@ -16,6 +16,8 @@
 #GPGDir      = @sysconfdir@/pacman.d/gnupg/
 #HookDir     = @sysconfdir@/pacman.d/hooks/
 HoldPkg     = pacman glibc
+#XferClientCert = /root/certificate.pem
+#XferClientKey  = /root/key.pem
 #XferCommand = /usr/bin/curl -L -C - -f -o %o %u
 #XferCommand = /usr/bin/wget --passive-ftp -c -O %o %u
 #CleanMethod = KeepInstalled

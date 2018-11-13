@@ -125,6 +125,8 @@ typedef struct __config_t {
 	alpm_list_t *noupgrade;
 	alpm_list_t *noextract;
 	alpm_list_t *overwrite_files;
+	char *xferclientcert;
+	char *xferclientkey;
 	char *xfercommand;
 
 	/* our connection to libalpm */
